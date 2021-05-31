@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
@@ -32,7 +33,6 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.ev.EvConfigGroup;
-import org.matsim.contrib.ev.charging.ChargingWithQueueingLogic;
 import org.matsim.contrib.ev.charging.VehicleChargingHandler;
 import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
@@ -40,7 +40,6 @@ import org.matsim.contrib.ev.fleet.ElectricFleetSpecification;
 import org.matsim.contrib.ev.fleet.ElectricVehicle;
 import org.matsim.contrib.ev.fleet.ElectricVehicleImpl;
 import org.matsim.contrib.ev.fleet.ElectricVehicleSpecification;
-import org.matsim.contrib.ev.infrastructure.Charger;
 import org.matsim.contrib.ev.infrastructure.ChargerSpecification;
 import org.matsim.contrib.ev.infrastructure.ChargingInfrastructureSpecification;
 import org.matsim.contrib.util.StraightLineKnnFinder;
@@ -61,8 +60,6 @@ import org.matsim.facilities.Facility;
  * routes from a {@link Facility} to another {@link Facility}, as we need in MATSim.
  *
  * @author jfbischoff
- * 
- * modified for RWA by mattjweist
  */
 
 public final class EvNetworkRoutingModule implements RoutingModule {
@@ -99,11 +96,11 @@ public final class EvNetworkRoutingModule implements RoutingModule {
 		this.evConfigGroup = evConfigGroup;
 		this.vehicleSuffix = mode.equals(TransportMode.car) ? "" : "_" + mode;
 	}
-	
 
 	@Override
 	public List<? extends PlanElement> calcRoute(final Facility fromFacility, final Facility toFacility,
 			final double departureTime, final Person person) {
+
 		List<? extends PlanElement> basicRoute = delegate.calcRoute(fromFacility, toFacility, departureTime, person);
 		Id<ElectricVehicle> evId = Id.create(person.getId() + vehicleSuffix, ElectricVehicle.class);
 		if (!electricFleet.getVehicleSpecifications().containsKey(evId)) {
@@ -111,66 +108,29 @@ public final class EvNetworkRoutingModule implements RoutingModule {
 		} else {
 			Leg basicLeg = (Leg)basicRoute.get(0);
 			ElectricVehicleSpecification ev = electricFleet.getVehicleSpecifications().get(evId);
-			
-			ChargingWithQueueingLogic.vehicleChargeStatus.put(evId,0); // mattjweist
 
 			Map<Link, Double> estimatedEnergyConsumption = estimateConsumption(ev, basicLeg);
 			double estimatedOverallConsumption = estimatedEnergyConsumption.values()
 					.stream()
 					.mapToDouble(Number::doubleValue)
-					.sum() * 1;
-			double capacity = ev.getBatteryCapacity() * (0.7 + random.nextDouble() * 0.1); // stop at 20-30% battery
-			
-			/* mattjweist */ 
-			// Important to note that this routing strategy expects charging up to 80%.
-			// If a different charging strategy is used (ex: chargeToMaxSocStrategy),
-			// then an insufficient number of stops will be planned.
-			double initialCapacity;
-			if (ev.getBatteryCapacity() == ev.getInitialSoc()) {
-				initialCapacity = capacity;
-			} else {
-				initialCapacity = capacity - (ev.getBatteryCapacity() - ev.getInitialSoc());
-			}
-			
-			capacity = capacity - 0.2 * ev.getBatteryCapacity(); // adjusted for charge to 80% strategy
-			double numberOfStops = Math.ceil( (estimatedOverallConsumption - initialCapacity) / capacity);
-			
-			double minSocArrival = 0.5 * ev.getBatteryCapacity(); // minimum SOC upon arrival
-			double maxCharge = 0.8 * ev.getBatteryCapacity(); // maximum SOC after charging
-			
+					.sum();
+			double capacity = ev.getBatteryCapacity() * (0.8 + random.nextDouble() * 0.18);
+			double numberOfStops = Math.floor(estimatedOverallConsumption / capacity);
 			if (numberOfStops < 1) {
 				return basicRoute;
 			} else {
 				List<Link> stopLocations = new ArrayList<>();
 				double currentConsumption = 0;
 				for (Map.Entry<Link, Double> e : estimatedEnergyConsumption.entrySet()) {
-					currentConsumption += e.getValue();				
-		
-					/* mattjweist */ 
-					// First stop 
-					// TODO: consider MinSocArrival in case of only one stop
-					if ( currentConsumption > initialCapacity && stopLocations.isEmpty()) {
-						stopLocations.add(e.getKey());
-						currentConsumption = 0;
-					}
-					// all remaining stops except last stop
-					else if ( (stopLocations.size() < numberOfStops - 1) && (currentConsumption > capacity)  && !stopLocations.isEmpty()) { // adjusted to stop at 80% charge
-						stopLocations.add(e.getKey());
-						currentConsumption = 0;
-					}
-					// last stop
-					else if ( (stopLocations.size() >= numberOfStops - 1) && (maxCharge - currentConsumption < minSocArrival) ) { // adjusted to stop at 80% charge
+					currentConsumption += e.getValue();
+					if (currentConsumption > capacity) {
 						stopLocations.add(e.getKey());
 						currentConsumption = 0;
 					}
 				}
-				
-				/* mattjweist */ 
-				// Important to note that this routing strategy expects a constant charge rate.
 				List<PlanElement> stagedRoute = new ArrayList<>();
 				Facility lastFrom = fromFacility;
 				double lastArrivaltime = departureTime;
-				
 				for (Link stopLocation : stopLocations) {
 
 					StraightLineKnnFinder<Link, ChargerSpecification> straightLineKnnFinder = new StraightLineKnnFinder<>(
@@ -180,10 +140,7 @@ public final class EvNetworkRoutingModule implements RoutingModule {
 									.values()
 									.stream()
 									.filter(charger -> ev.getChargerTypes().contains(charger.getChargerType())));
-					// ChargerSpecification selectedCharger = nearestChargers.get(random.nextInt(1));
-					ChargerSpecification selectedCharger = nearestChargers.get(0);
-					Id<Charger> chargerId = selectedCharger.getId();
-					
+					ChargerSpecification selectedCharger = nearestChargers.get(random.nextInt(1));
 					Link selectedChargerLink = network.getLinks().get(selectedCharger.getLinkId());
 					Facility nexttoFacility = new LinkWrapperFacility(selectedChargerLink);
 					if (nexttoFacility.getLinkId().equals(lastFrom.getLinkId())) {
@@ -196,16 +153,19 @@ public final class EvNetworkRoutingModule implements RoutingModule {
 					stagedRoute.add(lastLeg);
 					Activity chargeAct = PopulationUtils.createStageActivityFromCoordLinkIdAndModePrefix(selectedChargerLink.getCoord(),
 							selectedChargerLink.getId(), stageActivityModePrefix);
-					double maxPowerEstimate = Math.min(selectedCharger.getPlugPower(), 110000); // Mercedes EQC max DC charging 110kW -mattjweist
-					double estimatedChargingTime = capacity / maxPowerEstimate * 100; // overestimate. to be replaced by algo. -mattjweist
+					double maxPowerEstimate = Math.min(selectedCharger.getPlugPower(), ev.getBatteryCapacity() / 3.6);
+					double estimatedChargingTime = (ev.getBatteryCapacity() * 1.5) / maxPowerEstimate;
 					chargeAct.setMaximumDuration(Math.max(evConfigGroup.getMinimumChargeTime(), estimatedChargingTime));
 					lastArrivaltime += chargeAct.getMaximumDuration().seconds();
 					stagedRoute.add(chargeAct);
 					lastFrom = nexttoFacility;
 				}
 				stagedRoute.addAll(delegate.calcRoute(lastFrom, toFacility, lastArrivaltime, person));
+
 				return stagedRoute;
+
 			}
+
 		}
 	}
 
@@ -219,14 +179,19 @@ public final class EvNetworkRoutingModule implements RoutingModule {
 				});
 		DriveEnergyConsumption driveEnergyConsumption = pseudoVehicle.getDriveEnergyConsumption();
 		AuxEnergyConsumption auxEnergyConsumption = pseudoVehicle.getAuxEnergyConsumption();
+		double lastSoc = pseudoVehicle.getBattery().getSoc();
 		double linkEnterTime = basicLeg.getDepartureTime().seconds();
 		for (Link l : links) {
 			double travelT = travelTime.getLinkTravelTime(l, basicLeg.getDepartureTime().seconds(), null, null);
 
 			double consumption = driveEnergyConsumption.calcEnergyConsumption(l, travelT, linkEnterTime)
 					+ auxEnergyConsumption.calcEnergyConsumption(basicLeg.getDepartureTime().seconds(), travelT, l.getId());
-	
-			consumptions.put(l, consumption); // mattjweist
+			pseudoVehicle.getBattery().changeSoc(-consumption);
+			double currentSoc = pseudoVehicle.getBattery().getSoc();
+			// to accomodate for ERS, where energy charge is directly implemented in the consumption model
+			double consumptionDiff = (lastSoc - currentSoc);
+			lastSoc = currentSoc;
+			consumptions.put(l, consumptionDiff);
 			linkEnterTime += travelT;
 		}
 		return consumptions;

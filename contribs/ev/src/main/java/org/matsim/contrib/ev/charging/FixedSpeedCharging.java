@@ -32,9 +32,8 @@ public class FixedSpeedCharging implements BatteryCharging {
 	 * @param relativeSpeed   in C, where 1 C = full recharge in 1 hour
 	 */
 	public FixedSpeedCharging(ElectricVehicle electricVehicle, double relativeSpeed) {
-		// double c = electricVehicle.getBattery().getCapacity() / 3600.;
-		// maxPower = relativeSpeed * c;
-		maxPower = 110000; // Mercedes EQC max charge power 110kW
+		double c = electricVehicle.getBattery().getCapacity() / 3600.;
+		maxPower = relativeSpeed * c;
 	}
 
 	@Override

@@ -23,7 +23,6 @@ package org.matsim.contrib.ev.charging;
  *  This is an events based approach to trigger vehicle charging. Vehicles will be charged as soon as a person begins a charging activity.
  */
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,6 @@ import org.matsim.contrib.ev.fleet.ElectricVehicle;
 import org.matsim.contrib.ev.infrastructure.Charger;
 import org.matsim.contrib.ev.infrastructure.ChargingInfrastructure;
 import org.matsim.contrib.ev.infrastructure.ChargingInfrastructures;
-import org.matsim.contrib.ev.routing.MyCSVReader;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.events.MobsimScopeEventHandler;
 import org.matsim.vehicles.Vehicle;
@@ -89,33 +87,12 @@ public class VehicleChargingHandler
 			if (vehicleId != null) {
 				Id<ElectricVehicle> evId = Id.create(vehicleId, ElectricVehicle.class);
 				if (electricFleet.getElectricVehicles().containsKey(evId)) {
-					
-					// import list of planned chargers for this person
-					ArrayList<Id<Charger>> chargersList = new ArrayList<Id<Charger>>();
-					chargersList = MyCSVReader.personChargerMap.get(event.getPersonId());
-					
-					// get list of chargers at this link
 					ElectricVehicle ev = electricFleet.getElectricVehicles().get(evId);
 					List<Charger> chargers = chargersAtLinks.get(event.getLinkId());
-					
-					// find charger at this link that is also in list of planned chargers
-					// NOTE: person must only charge at this link once, or always at the same charger
-					// or else the wrong charger may be selected -mattjweist
-					Charger c = null;
-					for (Charger ch : chargers) {
-						Id<Charger> chargerId = ch.getId();
-						if (chargersList.contains(chargerId)) {
-							c = ch;
-						}
-					}
-					
-					/* // old, from MATSim
 					Charger c = chargers.stream()
 							.filter(ch -> ev.getChargerTypes().contains(ch.getChargerType()))
 							.findAny()
 							.get();
-					*/
-					
 					c.getLogic().addVehicle(ev, event.getTime());
 					vehiclesAtChargers.put(evId, c.getId());
 				}

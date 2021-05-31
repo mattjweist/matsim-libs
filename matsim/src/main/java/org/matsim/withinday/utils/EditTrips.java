@@ -91,7 +91,7 @@ public final class EditTrips {
 //</logger>
 		//  We need InternalInterface to move waiting passengers from a transit stop to the next leg if replanning tells them not to board a bus there.
 		if (internalInterface == null) {
-			// log.warn("InternalInterface is null. Replanning of pt/transit legs will not work properly and will likely fail.");
+			log.warn("InternalInterface is null. Replanning of pt/transit legs will not work properly and will likely fail.");
 		} else {
 			this.eventsManager = internalInterface.getMobsim().getEventsManager();
 			for (AgentTracker tracker : (internalInterface.getMobsim().getAgentTrackers())) {
@@ -108,7 +108,7 @@ public final class EditTrips {
 		this.internalInterface = internalInterface;
 
 		if (transitAgentTracker == null) {
-			// log.warn("no TransitStopAgentTracker found in qsim. Replanning of pt/transit legs will not work properly and will likely fail.");
+			log.warn("no TransitStopAgentTracker found in qsim. Replanning of pt/transit legs will not work properly and will likely fail.");
 		}
 
 	}

@@ -33,7 +33,6 @@ import org.matsim.contrib.ev.fleet.ElectricVehicle;
 import org.matsim.contrib.ev.infrastructure.ChargerSpecification;
 import org.matsim.core.api.experimental.events.EventsManager;
 
-
 public class ChargingWithQueueingLogic implements ChargingLogic {
 	private final ChargerSpecification charger;
 	private final ChargingStrategy chargingStrategy;
@@ -42,10 +41,6 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 	private final Map<Id<ElectricVehicle>, ElectricVehicle> pluggedVehicles = new LinkedHashMap<>();
 	private final Queue<ElectricVehicle> queuedVehicles = new LinkedList<>();
 	private final Map<Id<ElectricVehicle>, ChargingListener> listeners = new LinkedHashMap<>();
-	
-	public static Map<Id, Integer> vehicleChargeStatus = new LinkedHashMap<>();
-	// is initialized during first charging activity
-	// 0 = driving or charging; 1 = finished charging; 2 = queuing
 
 	public ChargingWithQueueingLogic(ChargerSpecification charger, ChargingStrategy chargingStrategy,
 			EventsManager eventsManager) {
@@ -54,28 +49,19 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 		this.eventsManager = Objects.requireNonNull(eventsManager);
 	}
 
-	
 	@Override
 	public void chargeVehicles(double chargePeriod, double now) {
 		Iterator<ElectricVehicle> evIter = pluggedVehicles.values().iterator();
-		while (evIter.hasNext()) { // loop through every plugged vehicle
+		while (evIter.hasNext()) {
 			ElectricVehicle ev = evIter.next();
+			// with fast charging, we charge around 4% of SOC per minute,
+			// so when updating SOC every 10 seconds, SOC increases by less then 1%
 			ev.getBattery().changeSoc(ev.getChargingPower().calcChargingPower(charger) * chargePeriod);
-			
-			if (chargingStrategy.isChargingCompleted(ev)) {				
-				Id<ElectricVehicle> evId = ev.getId();
-				
-				evIter.remove();
-				eventsManager.processEvent(new ChargingEndEvent(now, charger.getId(), evId));
-				listeners.remove(evId).notifyChargingEnded(ev, now);
-				
-				System.out.println("agent " + evId + " finished charging at t=" + now + "s = " + now/3600);
 
-				if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(evId)) {
-					vehicleChargeStatus.replace(evId,1);
-				} else {
-					vehicleChargeStatus.put(evId,1);
-				}
+			if (chargingStrategy.isChargingCompleted(ev)) {
+				evIter.remove();
+				eventsManager.processEvent(new ChargingEndEvent(now, charger.getId(), ev.getId()));
+				listeners.remove(ev.getId()).notifyChargingEnded(ev, now);
 			}
 		}
 
@@ -93,8 +79,6 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 	@Override
 	public void addVehicle(ElectricVehicle ev, ChargingListener chargingListener, double now) {
 		listeners.put(ev.getId(), chargingListener);
-		double pluggedVehiclesSize = pluggedVehicles.size(); // debug
-		double chargerPlugCount = charger.getPlugCount(); // debug
 		if (pluggedVehicles.size() < charger.getPlugCount()) {
 			plugVehicle(ev, now);
 		} else {
@@ -107,7 +91,7 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 		if (pluggedVehicles.remove(ev.getId()) != null) {// successfully removed
 			eventsManager.processEvent(new ChargingEndEvent(now, charger.getId(), ev.getId()));
 			listeners.remove(ev.getId()).notifyChargingEnded(ev, now);
-			
+
 			if (!queuedVehicles.isEmpty()) {
 				plugVehicle(queuedVehicles.poll(), now);
 			}
@@ -120,32 +104,15 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 
 	private void queueVehicle(ElectricVehicle ev, double now) {
 		queuedVehicles.add(ev);
-		Id<ElectricVehicle> evId = ev.getId();
-		listeners.get(evId).notifyVehicleQueued(ev, now);
-		
-		System.out.println(("agent " + evId + " started queuing at t=" + now + "s = " + now/3600));
-		if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(evId)) {
-			vehicleChargeStatus.replace(evId,2);
-		} else {
-			vehicleChargeStatus.put(evId,2);
-		}
+		listeners.get(ev.getId()).notifyVehicleQueued(ev, now);
 	}
 
 	private void plugVehicle(ElectricVehicle ev, double now) {
-		Id<ElectricVehicle> evId = ev.getId();
-		if (pluggedVehicles.put(evId, ev) != null) {
+		if (pluggedVehicles.put(ev.getId(), ev) != null) {
 			throw new IllegalArgumentException();
 		}
-		
-		System.out.println("agent " + evId + " started charging at t=" + now + "s = " + now/3600);
-		if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(evId)) {
-			vehicleChargeStatus.replace(evId,0);
-		} else {
-			vehicleChargeStatus.put(evId,0);
-		}
-		
-		eventsManager.processEvent(new ChargingStartEvent(now, charger.getId(), evId, charger.getChargerType()));
-		listeners.get(evId).notifyChargingStarted(ev, now);
+		eventsManager.processEvent(new ChargingStartEvent(now, charger.getId(), ev.getId(), charger.getChargerType()));
+		listeners.get(ev.getId()).notifyChargingStarted(ev, now);
 	}
 
 	private final Collection<ElectricVehicle> unmodifiablePluggedVehicles = Collections.unmodifiableCollection(

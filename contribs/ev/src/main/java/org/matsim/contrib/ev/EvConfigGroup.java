@@ -41,7 +41,7 @@ public final class EvConfigGroup extends ReflectiveConfigGroup {
 	static final String AUX_DISCHARGE_TIME_STEP_EXP = "AUX discharging will be simulated every 'auxDischargeTimeStep'-th time step";
 
 	public static final String MINCHARGETIME = "minChargingTime";
-	static final String MINCHARGETIME_EXP = "Minimum activity duration for charging. Used in EvNetwork Routing.";
+	static final String MINCHARGETIME_EXP = "Miinum activity duration for charging. Used in EvNetwork Routing.";
 
 	// input
 	public static final String CHARGERS_FILE = "chargersFile";
@@ -59,7 +59,7 @@ public final class EvConfigGroup extends ReflectiveConfigGroup {
 	@Positive
 	private int chargeTimeStep = 5; // 5 s ==> 0.35% SOC (fast charging, 50 kW)
 
-	private int minimumChargeTime = 120;
+	private int minimumChargeTime = 1200;
 
 	// only used if SeparateAuxDischargingHandler is used, otherwise ignored
 	@Positive
