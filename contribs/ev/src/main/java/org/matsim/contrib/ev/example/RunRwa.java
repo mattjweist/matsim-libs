@@ -30,7 +30,6 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.ev.EvConfigGroup;
 import org.matsim.contrib.ev.EvModule;
 import org.matsim.contrib.ev.charging.VehicleChargingHandler;
-import org.matsim.contrib.ev.routing.EvNetworkRoutingProvider;
 import org.matsim.contrib.ev.routing.EvNetworkRoutingProviderRwa;
 import org.matsim.contrib.ev.routing.MyCSVReader;
 import org.matsim.core.config.Config;
