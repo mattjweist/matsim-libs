@@ -69,7 +69,7 @@ public final class ImmutableElectricVehicleSpecification implements ElectricVehi
 	public Id<ElectricVehicle> getId() {
 		return id;
 	}
-
+	
 	@Override
 	public String getVehicleType() {
 		return vehicleType;

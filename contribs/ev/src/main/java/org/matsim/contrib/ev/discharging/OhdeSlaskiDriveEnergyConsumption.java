@@ -20,6 +20,7 @@
 package org.matsim.contrib.ev.discharging;
 
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.ev.EvUnits;
 
 /**
  * Parametrised for the Nissan Leaf. All values in SI units.
@@ -29,10 +30,15 @@ import org.matsim.api.core.v01.network.Link;
  * <p>
  * http://fwmt.put.poznan.pl/imgWYSIWYG/agill/File/2_68_2016/jmte_2016_68_2_03_ohde_b_slaski_g.pdf
  * TODO Add (dis-)charging efficiency relative to SOC, temperature, etc...
+ * 
+ * 
+ * 
+ * modified for static model by mattjweist
  */
 public class OhdeSlaskiDriveEnergyConsumption implements DriveEnergyConsumption {
+	/*
 	private static final double g = 9.81; // g [m/s^2]
-	private static final double m = 1525; // vehicle mass [kg]
+	private static final double m = 1545; // vehicle mass [kg] //
 	private static final double m_s = m + 100; // vehicle mass + extra mass [kg]
 	private static final double spr = .935; // drive train efficiency [-]
 	private static final double ft = .01; // rolling drag coefficient[-]
@@ -64,6 +70,7 @@ public class OhdeSlaskiDriveEnergyConsumption implements DriveEnergyConsumption 
 		return v * (ft * m_s * g + fa * v * v + cb * (a1 * Math.log(v) + a2) * m_s) / spr;
 	}
 
+	
 	@Override
 	public double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime) {
 		if (travelTime == 0) {
@@ -72,6 +79,23 @@ public class OhdeSlaskiDriveEnergyConsumption implements DriveEnergyConsumption 
 
 		double avgSpeed = link.getLength() / travelTime;
 		int idx = (int)Math.round(avgSpeed * SPEED_STEPS_PER_UNIT);
-		return POWER[idx] * travelTime;
+		
+		return POWER[idx] * travelTimer;
 	}
+	*/
+	
+	// static consumption model -mattjweist
+	@Override
+	public double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime) {
+		if (travelTime == 0) {
+			return 0;
+		}
+		
+		double consumptionRate = 22.2; // kWh/100km (Mercedes EQC)
+		consumptionRate = EvUnits.kWh_100km_to_J_m(consumptionRate); // convert from kWh/100km to J/m	
+		double consumption = consumptionRate * link.getLength();
+		return consumption;
+	}
+	
+
 }

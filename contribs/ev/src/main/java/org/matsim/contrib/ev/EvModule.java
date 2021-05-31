@@ -28,6 +28,7 @@ import org.matsim.core.controler.AbstractModule;
 
 public class EvModule extends AbstractModule {
 	public static final String EV_COMPONENT = "EV_COMPONENT";
+	
 
 	@Override
 	public void install() {
