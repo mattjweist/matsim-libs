@@ -67,7 +67,7 @@ public class RunRwa {
 		Controler controler = new Controler(scenario);
 		
 		// Load charging maps
-		String chargeMapFile = "C:/Users/Weist/Desktop/Projekt/dummyTabelle.csv";
+		String chargeMapFile = "C:/Users/Weist/Desktop/Projekt/MILP/MILP/chargePlans.csv";
 		MyCSVReader.loadChargeMaps(chargeMapFile);
 		
 		controler.addOverridingModule(new EvModule());

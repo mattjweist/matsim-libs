@@ -29,7 +29,7 @@ public class MyCSVReader {
 				BufferedReader br = new BufferedReader(new FileReader(path));
 				while((line = br.readLine()) != null) { // read each line (person) one by one
 					if (!line.startsWith("V")) { // skip header row
-						String[] values = line.split(";");
+						String[] values = line.split(",");
 						
 						// create array lists for chargers, charge times
 						ArrayList<Id<Charger>> chargersList = new ArrayList<Id<Charger>>();

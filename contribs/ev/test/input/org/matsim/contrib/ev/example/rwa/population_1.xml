@@ -9,11 +9,11 @@
 
 	<person id="0">
 		<plan selected="yes">
-			<activity type="home" x="72715.69745293364" y="5418878.559630298" end_time="06:00:00" >
+			<activity type="home" x="168441.94459066208" y="5945241.585397409" end_time="00:00:00" >
 			</activity>
 			<leg mode="car">
 			</leg>
-			<activity type="work" x="168441.94459066208" y="5945241.585397409" >
+			<activity type="work" x="72715.69745293364" y="5418878.559630298" >
 			</activity>
 		</plan>
 

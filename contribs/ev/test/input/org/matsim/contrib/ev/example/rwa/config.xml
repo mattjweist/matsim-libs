@@ -6,7 +6,7 @@
         <param name="chargeTimeStep" value="5"/>
         <param name="chargersFile" value="chargers.xml"/>
         <param name="timeProfiles" value="true"/>
-        <param name="vehiclesFile" value="evehicles_15.xml"/>
+        <param name="vehiclesFile" value="evehicles_1.xml"/>
     </module>
 
     <module name="global">
@@ -20,7 +20,7 @@
     </module>
 
     <module name="plans">
-        <param name="inputPlansFile" value="population_15.xml"/>
+        <param name="inputPlansFile" value="C:/Users/Weist/Desktop/Projekt/MILP/MILP/population_RWA.xml"/>
     </module>
 
     <module name="controler">

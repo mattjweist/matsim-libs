@@ -78,8 +78,8 @@ public class VehicleChargingHandler
 	}
 
 	/**
-	 * This assumes no liability which charger is used, as long as the type matches
-	 *
+	 * This assumes no liability which charger is used, as long as the type matches - matsim
+	 * Now chargers are pre-planned - mattjweist
 	 * @param event
 	 */
 	@Override

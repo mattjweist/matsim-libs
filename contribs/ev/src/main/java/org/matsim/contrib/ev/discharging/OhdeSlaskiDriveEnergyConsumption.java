@@ -91,7 +91,7 @@ public class OhdeSlaskiDriveEnergyConsumption implements DriveEnergyConsumption 
 			return 0;
 		}
 		
-		double consumptionRate = 22.2; // kWh/100km (Mercedes EQC)
+		double consumptionRate = 26; // kWh/100km (Mercedes EQC)
 		consumptionRate = EvUnits.kWh_100km_to_J_m(consumptionRate); // convert from kWh/100km to J/m	
 		double consumption = consumptionRate * link.getLength();
 		return consumption;
