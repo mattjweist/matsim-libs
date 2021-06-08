@@ -26,7 +26,7 @@ import org.matsim.contrib.ev.fleet.ElectricVehicle;
 public interface ChargingStrategy {
 	default boolean isChargingCompleted(ElectricVehicle ev) {
 		// return calcRemainingEnergyToCharge(ev) <= 0;
-		return ev.getBattery().getSoc() >= ev.getBattery().getCapacity(); // charge until 80%
+		return ev.getBattery().getSoc() >= ev.getBattery().getCapacity(); // stop at 100% if necessary
 	}
 
 	double calcRemainingEnergyToCharge(ElectricVehicle ev);

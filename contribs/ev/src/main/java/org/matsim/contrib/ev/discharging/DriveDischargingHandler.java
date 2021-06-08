@@ -110,8 +110,9 @@ public class DriveDischargingHandler
 			Link link = network.getLinks().get(linkId);
 			double tt = eventTime - evDrive.movedOverNodeTime;
 			ElectricVehicle ev = evDrive.ev;
-			double energy = ev.getDriveEnergyConsumption().calcEnergyConsumption(link, tt, eventTime - tt)
-					+ ev.getAuxEnergyConsumption().calcEnergyConsumption(eventTime - tt, tt, linkId);
+			// double energy = ev.getDriveEnergyConsumption().calcEnergyConsumption(link, tt, eventTime - tt)
+			//		+ ev.getAuxEnergyConsumption().calcEnergyConsumption(eventTime - tt, tt, linkId);
+			double energy = ev.getDriveEnergyConsumption().calcEnergyConsumption(link, tt, eventTime - tt);
 			//Energy consumption might be negative on links with negative slope
 			ev.getBattery().changeSoc(-energy);
 

@@ -18,7 +18,7 @@ public class MyCSVReader {
 	// Then create a map for the first map and their times
 	public static Map<Id<Person>, ArrayList<Id<Charger>>> personChargerMap = new LinkedHashMap<>();
 	// public static Map<Map<Id<Person>, ArrayList<Id<Charger>>>, ArrayList<Double>> personChargerTimeMap = new LinkedHashMap<>();
-	public static Map<Id<Person>, ArrayList<Double>> personTimeMap = new LinkedHashMap<>();
+	public static Map<Id<Person>, ArrayList<Double>> personEnergyMap = new LinkedHashMap<>();
 
 
 	public static void loadChargeMaps(String path) {
@@ -31,29 +31,29 @@ public class MyCSVReader {
 					if (!line.startsWith("V")) { // skip header row
 						String[] values = line.split(",");
 						
-						// create array lists for chargers, charge times
+						// create array lists for chargers, charge energies
 						ArrayList<Id<Charger>> chargersList = new ArrayList<Id<Charger>>();
-						ArrayList<Double> chargeTimeList = new ArrayList<Double>();
+						ArrayList<Double> chargeEnergyList = new ArrayList<Double>();
 						for (int i = 1; i<=(values.length-1)/2; i++) {
 							// read charger id
 							Id<Charger> chargerId = Id.create(values[2*i-1], Charger.class);
 							chargersList.add(chargerId);
-							// read charge time
-							Double chargeTime = Double.parseDouble(values[2*i]);
-							chargeTimeList.add(chargeTime);
+							// read charge energy
+							Double chargeEnergy = Double.parseDouble(values[2*i]);
+							chargeEnergyList.add(chargeEnergy);
 						}
 						// read person id
 						Id<Person> personId = Id.create(values[0], Person.class);
 						// populate maps
 						personChargerMap.put(personId,chargersList);
 						// personChargerTimeMap.put(personChargerMap, chargeTimeList);
-						personTimeMap.put(personId,chargeTimeList);
+						personEnergyMap.put(personId,chargeEnergyList);
 					}
 				}
 				
 				br.close();
 				System.out.println("Charge map: " + personChargerMap);
-				System.out.println("Time map: " + personTimeMap);
+				System.out.println("Energy map: " + personEnergyMap);
 				
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();

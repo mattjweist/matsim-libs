@@ -44,7 +44,8 @@ public class FastThenSlowCharging implements BatteryCharging {
 	public double calcChargingPower(double maxPower) {
 		Battery b = electricVehicle.getBattery();
 		double relativeSoc = b.getSoc() / b.getCapacity();
-		double c = b.getCapacity() / 3600;
+		double c = b.getCapacity() / 3600; // 1 Wh = 3600 J
+		/*
 		if (relativeSoc <= 0.5) {
 			return Math.min(maxPower, 1.75 * c);
 		} else if (relativeSoc <= 0.75) {
@@ -52,8 +53,19 @@ public class FastThenSlowCharging implements BatteryCharging {
 		} else {
 			return Math.min(maxPower, 0.5 * c);
 		}
+		*/
+		if (relativeSoc <= 0.6) {
+			return Math.min(maxPower, 1.03 * c);
+		} else if (relativeSoc <= 0.75) {
+			return Math.min(maxPower, 0.77 * c);
+		} else if (relativeSoc <= 0.9) {
+			return Math.min(maxPower, 0.5 * c);
+		} else {
+			return Math.min(maxPower, 0.25 * c);
+		}
 	}
 
+	// charge time not relevant when providing open-ended charge duration; using energy instead
 	@Override
 	public double calcChargingTime(ChargerSpecification charger, double energy) {
 		Preconditions.checkArgument(energy >= 0, "Energy is negative: %s", energy);

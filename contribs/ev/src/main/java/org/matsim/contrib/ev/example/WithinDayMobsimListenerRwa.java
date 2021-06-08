@@ -138,12 +138,13 @@ class WithinDayMobsimListenerRwa implements MobsimBeforeSimStepListener {
 		EditTrips editTrips = new EditTrips(tripRouter, scenario, internalInterface);
 		EditPlans editPlans = new EditPlans( (QSim) mobsim, editTrips);
 		
-		ArrayList<Double> chargeTimeList = new ArrayList<Double>(); // initialize list of charge times
-		chargeTimeList = MyCSVReader.personTimeMap.get(agent.getId()); // fill list of charge times
+		// ArrayList<Double> chargeTimeList = new ArrayList<Double>(); // initialize list of charge times
+		// chargeTimeList = MyCSVReader.personTimeMap.get(agent.getId()); // fill list of charge times
 		
 		Integer planElementsIndex = WithinDayAgentUtils.getCurrentPlanElementIndex(agent); // get current index		
 		
-		double desiredChargeDuration = chargeTimeList.get(planElementsIndex/2-1); // pull from maps
+		// double desiredChargeDuration = chargeTimeList.get(planElementsIndex/2-1); // pull from maps
+		double desiredChargeDuration = 7200;
 		// delay end of charging activity every loop
 		editPlans.rescheduleCurrentActivityEndtime(agent, now + desiredChargeDuration);
 		

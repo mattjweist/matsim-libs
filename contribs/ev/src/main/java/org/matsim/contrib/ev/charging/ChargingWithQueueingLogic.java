@@ -19,6 +19,7 @@
 
 package org.matsim.contrib.ev.charging;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -31,6 +32,7 @@ import java.util.Queue;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.ev.fleet.ElectricVehicle;
 import org.matsim.contrib.ev.infrastructure.ChargerSpecification;
+import org.matsim.contrib.ev.routing.MyCSVReader;
 import org.matsim.core.api.experimental.events.EventsManager;
 
 
@@ -43,9 +45,16 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 	private final Queue<ElectricVehicle> queuedVehicles = new LinkedList<>();
 	private final Map<Id<ElectricVehicle>, ChargingListener> listeners = new LinkedHashMap<>();
 	
+	// create map for listening to the charge status of the vehicle
 	public static Map<Id, Integer> vehicleChargeStatus = new LinkedHashMap<>();
 	// is initialized during first charging activity
 	// 0 = driving or charging; 1 = finished charging; 2 = queuing
+	
+	// create map for tracking number of charge stops so far
+	public static Map<Id, Integer> stopsSoFar = new LinkedHashMap<>();
+	
+	// create map for tracking accumulated charge for corresponding charge stop
+	public static Map<Id, Double> chargeAccum = new LinkedHashMap<>();
 
 	public ChargingWithQueueingLogic(ChargerSpecification charger, ChargingStrategy chargingStrategy,
 			EventsManager eventsManager) {
@@ -58,12 +67,39 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 	@Override
 	public void chargeVehicles(double chargePeriod, double now) {
 		Iterator<ElectricVehicle> evIter = pluggedVehicles.values().iterator();
+		
+		// import charge map
+		ArrayList<Double> chargeEnergyList = new ArrayList<Double>(); // initialize list of charge times
+
+		
 		while (evIter.hasNext()) { // loop through every plugged vehicle
 			ElectricVehicle ev = evIter.next();
-			ev.getBattery().changeSoc(ev.getChargingPower().calcChargingPower(charger) * chargePeriod);
+			double energyThisPeriod = ev.getChargingPower().calcChargingPower(charger) * chargePeriod;
+			ev.getBattery().changeSoc(energyThisPeriod);
+			Id<ElectricVehicle> evId = ev.getId();
 			
-			if (chargingStrategy.isChargingCompleted(ev)) {				
-				Id<ElectricVehicle> evId = ev.getId();
+			// increment accumulated charge for this charging event
+			if (!chargeAccum.containsKey(evId)) {
+				chargeAccum.put(evId, energyThisPeriod);
+			} else {
+				chargeAccum.put(evId, chargeAccum.get(evId) + energyThisPeriod);
+			}
+			
+			// initialize number of stops so far
+			if (!stopsSoFar.containsKey(evId)) {
+				stopsSoFar.put(evId, 0);
+			}
+			
+			// fill list of charge energies
+			chargeEnergyList = MyCSVReader.personEnergyMap.get(ev.getId());
+
+			// if accumulated charge is greater than desired OR if battery reaches 100% capacity
+			if (chargeAccum.get(evId) >= chargeEnergyList.get(stopsSoFar.get(evId)) || chargingStrategy.isChargingCompleted(ev)) {	
+				
+				// increment number of stops so far
+				stopsSoFar.put(evId, stopsSoFar.get(evId) + 1);
+				// reset accumulated charge
+				chargeAccum.put(evId,  0.0);
 				
 				evIter.remove();
 				eventsManager.processEvent(new ChargingEndEvent(now, charger.getId(), evId));
@@ -71,7 +107,7 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 				
 				System.out.println("agent " + evId + " finished charging at t=" + now + "s = " + now/3600);
 
-				if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(evId)) {
+				if (vehicleChargeStatus.containsKey(evId)) {
 					vehicleChargeStatus.replace(evId,1);
 				} else {
 					vehicleChargeStatus.put(evId,1);

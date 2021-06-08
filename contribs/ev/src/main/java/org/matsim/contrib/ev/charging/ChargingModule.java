@@ -45,7 +45,8 @@ public class ChargingModule extends AbstractModule {
 			}
 		});
 
-		bind(ChargingPower.Factory.class).toInstance(ev -> new FixedSpeedCharging(ev, 1));
+		// bind(ChargingPower.Factory.class).toInstance(ev -> new FixedSpeedCharging(ev, 1));
+		bind(ChargingPower.Factory.class).toInstance(ev -> new FastThenSlowCharging(ev));
 
 		installQSimModule(new AbstractQSimModule() {
 			@Override

@@ -52,7 +52,7 @@ public class IndividualSocTimeProfileCollectorProvider implements Provider<Mobsi
 	@Override
 	public MobsimListener get() {
 		ProfileCalculator calc = createIndividualSocCalculator(evFleet);
-		return new TimeProfileCollector(calc, 300, "individual_soc_time_profiles", matsimServices);
+		return new TimeProfileCollector(calc, 60, "individual_soc_time_profiles", matsimServices);
 	}
 
 	private static final int MAX_VEHICLE_COLUMNS = 50;
