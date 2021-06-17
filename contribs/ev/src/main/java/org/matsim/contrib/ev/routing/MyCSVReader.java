@@ -18,7 +18,7 @@ public class MyCSVReader {
 	// Then create a map for the first map and their times
 	public static Map<Id<Person>, ArrayList<Id<Charger>>> personChargerMap = new LinkedHashMap<>();
 	// public static Map<Map<Id<Person>, ArrayList<Id<Charger>>>, ArrayList<Double>> personChargerTimeMap = new LinkedHashMap<>();
-	public static Map<Id<Person>, ArrayList<Double>> personEnergyMap = new LinkedHashMap<>();
+	public static Map<Id<Person>, ArrayList<Double>> personEndSocMap = new LinkedHashMap<>();
 
 
 	public static void loadChargeMaps(String path) {
@@ -28,32 +28,32 @@ public class MyCSVReader {
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(path));
 				while((line = br.readLine()) != null) { // read each line (person) one by one
-					if (!line.startsWith("V")) { // skip header row
+					if (!line.startsWith("V")) { // "Vehicle ID" -- skip header row
 						String[] values = line.split(",");
 						
 						// create array lists for chargers, charge energies
 						ArrayList<Id<Charger>> chargersList = new ArrayList<Id<Charger>>();
-						ArrayList<Double> chargeEnergyList = new ArrayList<Double>();
+						ArrayList<Double> endSocList = new ArrayList<Double>();
 						for (int i = 1; i<=(values.length-1)/2; i++) {
 							// read charger id
 							Id<Charger> chargerId = Id.create(values[2*i-1], Charger.class);
 							chargersList.add(chargerId);
-							// read charge energy
-							Double chargeEnergy = Double.parseDouble(values[2*i]);
-							chargeEnergyList.add(chargeEnergy);
+							// read end SOC
+							Double endSoc = Double.parseDouble(values[2*i]);
+							endSocList.add(endSoc);
 						}
 						// read person id
 						Id<Person> personId = Id.create(values[0], Person.class);
 						// populate maps
 						personChargerMap.put(personId,chargersList);
 						// personChargerTimeMap.put(personChargerMap, chargeTimeList);
-						personEnergyMap.put(personId,chargeEnergyList);
+						personEndSocMap.put(personId,endSocList);
 					}
 				}
 				
 				br.close();
 				System.out.println("Charge map: " + personChargerMap);
-				System.out.println("Energy map: " + personEnergyMap);
+				System.out.println("End SOC map: " + personEndSocMap);
 				
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();

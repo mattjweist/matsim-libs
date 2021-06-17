@@ -103,8 +103,6 @@ public final class EvNetworkRoutingModuleRwa implements RoutingModule {
 				
 				ArrayList<Id<Charger>> chargersList = new ArrayList<Id<Charger>>(); // initialize list of chargers
 				chargersList = MyCSVReader.personChargerMap.get(person.getId()); // fill list of chargers for person
-				// ArrayList<Double> chargeTimeList = new ArrayList<Double>(); // initialize list of charge times
-				// chargeTimeList = MyCSVReader.personTimeMap.get(person.getId()); // fill list of charge times for person
 						
 				for (int i = 0; i < numberOfStops; i++) {
 									
@@ -126,7 +124,6 @@ public final class EvNetworkRoutingModuleRwa implements RoutingModule {
 					stagedRoute.add(lastLeg);
 					Activity chargeAct = PopulationUtils.createStageActivityFromCoordLinkIdAndModePrefix(selectedChargerLink.getCoord(),
 							selectedChargerLink.getId(), stageActivityModePrefix);
-					// double desiredChargingTime = chargeTimeList.get(i); // pull ith charge time from table
 					double desiredChargingTime = 7200; // set arbitrarily long charge time
 					chargeAct.setMaximumDuration(Math.max(evConfigGroup.getMinimumChargeTime(), desiredChargingTime));
 					lastArrivaltime += chargeAct.getMaximumDuration().seconds();

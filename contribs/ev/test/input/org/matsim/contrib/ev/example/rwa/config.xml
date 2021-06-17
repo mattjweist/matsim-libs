@@ -6,7 +6,7 @@
         <param name="chargeTimeStep" value="5"/>
         <param name="chargersFile" value="chargers.xml"/>
         <param name="timeProfiles" value="true"/>
-        <param name="vehiclesFile" value="evehicles_1.xml"/>
+        <param name="vehiclesFile" value="evehicles_5.xml"/>
     </module>
 
     <module name="global">

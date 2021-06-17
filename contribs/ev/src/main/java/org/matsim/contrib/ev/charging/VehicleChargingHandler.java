@@ -21,12 +21,15 @@ package org.matsim.contrib.ev.charging;
 /*
  * created by jbischoff, 09.10.2018
  *  This is an events based approach to trigger vehicle charging. Vehicles will be charged as soon as a person begins a charging activity.
+ * edited by mattjweist, 11.06.2021
  */
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -76,6 +79,9 @@ public class VehicleChargingHandler
 		this.electricFleet = electricFleet;
 		chargersAtLinks = ChargingInfrastructures.getChargersAtLinks(chargingInfrastructure);
 	}
+	
+	public static Map<Id, Integer> numVehiclesAtCharger = new LinkedHashMap<>();
+	
 
 	/**
 	 * This assumes no liability which charger is used, as long as the type matches - matsim
@@ -96,25 +102,68 @@ public class VehicleChargingHandler
 					
 					// get list of chargers at this link
 					ElectricVehicle ev = electricFleet.getElectricVehicles().get(evId);
-					List<Charger> chargers = chargersAtLinks.get(event.getLinkId());
+					List<Charger> chargersAtLink = chargersAtLinks.get(event.getLinkId());
+					// fill map of charge powers at link
+					Map<Charger, Double> chargerPower = new LinkedHashMap<>();
+					for (Charger charger : chargersAtLink) {
+						chargerPower.put(charger, charger.getPlugPower());
+					}
+					// create and sort map of chargers at link by descending power	
+					final Map<Charger, Double> sortedChargerPower = chargerPower.entrySet()
+			                .stream()
+			                .sorted((Map.Entry.<Charger, Double>comparingByValue().reversed()))
+			                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+					List<Charger> sortedChargersAtLink = new ArrayList<Charger>(sortedChargerPower.keySet());
 					
-					// find charger at this link that is also in list of planned chargers
-					// NOTE: person must only charge at this link once, or always at the same charger
-					// or else the wrong charger may be selected -mattjweist
 					Charger c = null;
-					for (Charger ch : chargers) {
+					loop:
+					for (Charger ch : chargersAtLink) {
 						Id<Charger> chargerId = ch.getId();
+						
+						// initialize number of vehicles at charger if necessary
+						if (!numVehiclesAtCharger.containsKey(chargerId)) {
+							numVehiclesAtCharger.put(chargerId, 0);
+						}
+						
+						// check for the planned charger
 						if (chargersList.contains(chargerId)) {
-							c = ch;
+							Charger chargerFromPlan = ch;				
+							// check if charger has plug available
+							if (numVehiclesAtCharger.get(chargerId) < ch.getPlugCount()) {							
+								// choose this charger
+								c = ch;
+								break loop;
+							} else {
+								// loop through the chargers at the link in order of descending power
+								for (Charger ch1 : sortedChargersAtLink) {
+									chargerId = ch1.getId();
+									// initialize number of vehicles at charger if necessary
+									if (!numVehiclesAtCharger.containsKey(chargerId)) {
+										numVehiclesAtCharger.put(chargerId, 0);
+									}
+									// if a plug is available
+									if (numVehiclesAtCharger.get(chargerId) < ch1.getPlugCount()) {
+										// choose this charger
+										c = ch1;
+										break loop;
+									} else {
+										// just stick to the original plan
+										c = chargerFromPlan;
+									}
+								}
+							}
+						}	else {
+							// pick some charger from the link
+							c = chargersAtLink.stream()
+									.filter(ch2 -> ev.getChargerTypes().contains(ch2.getChargerType()))
+									.findAny()
+									.get();
 						}
 					}
-					
-					/* // old, from MATSim
-					Charger c = chargers.stream()
-							.filter(ch -> ev.getChargerTypes().contains(ch.getChargerType()))
-							.findAny()
-							.get();
-					*/
+					// update number of cars at charger
+					// key = charger ID, value = # of cars at charger
+					Id<Charger> chargerId = c.getId();
+					numVehiclesAtCharger.put(chargerId, numVehiclesAtCharger.get(chargerId) + 1);
 					
 					c.getLogic().addVehicle(ev, event.getTime());
 					vehiclesAtChargers.put(evId, c.getId());
@@ -130,6 +179,7 @@ public class VehicleChargingHandler
 			if (vehicleId != null) {
 				Id<ElectricVehicle> evId = Id.create(vehicleId, ElectricVehicle.class);
 				Id<Charger> chargerId = vehiclesAtChargers.remove(evId);
+
 				if (chargerId != null) {
 					Charger c = chargingInfrastructure.getChargers().get(chargerId);
 					c.getLogic().removeVehicle(electricFleet.getElectricVehicles().get(evId), event.getTime());

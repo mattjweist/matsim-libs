@@ -52,9 +52,6 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 	
 	// create map for tracking number of charge stops so far
 	public static Map<Id, Integer> stopsSoFar = new LinkedHashMap<>();
-	
-	// create map for tracking accumulated charge for corresponding charge stop
-	public static Map<Id, Double> chargeAccum = new LinkedHashMap<>();
 
 	public ChargingWithQueueingLogic(ChargerSpecification charger, ChargingStrategy chargingStrategy,
 			EventsManager eventsManager) {
@@ -69,43 +66,39 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 		Iterator<ElectricVehicle> evIter = pluggedVehicles.values().iterator();
 		
 		// import charge map
-		ArrayList<Double> chargeEnergyList = new ArrayList<Double>(); // initialize list of charge times
+		ArrayList<Double> endSocList = new ArrayList<Double>(); // initialize list of end SOCs
 
 		
 		while (evIter.hasNext()) { // loop through every plugged vehicle
 			ElectricVehicle ev = evIter.next();
 			double energyThisPeriod = ev.getChargingPower().calcChargingPower(charger) * chargePeriod;
 			ev.getBattery().changeSoc(energyThisPeriod);
-			Id<ElectricVehicle> evId = ev.getId();
-			
-			// increment accumulated charge for this charging event
-			if (!chargeAccum.containsKey(evId)) {
-				chargeAccum.put(evId, energyThisPeriod);
-			} else {
-				chargeAccum.put(evId, chargeAccum.get(evId) + energyThisPeriod);
-			}
+			Id<ElectricVehicle> evId = ev.getId();	
 			
 			// initialize number of stops so far
 			if (!stopsSoFar.containsKey(evId)) {
 				stopsSoFar.put(evId, 0);
 			}
 			
-			// fill list of charge energies
-			chargeEnergyList = MyCSVReader.personEnergyMap.get(ev.getId());
-
-			// if accumulated charge is greater than desired OR if battery reaches 100% capacity
-			if (chargeAccum.get(evId) >= chargeEnergyList.get(stopsSoFar.get(evId)) || chargingStrategy.isChargingCompleted(ev)) {	
+			// fill list of end SOCs (note: these are percentages)
+			endSocList = MyCSVReader.personEndSocMap.get(ev.getId());
+			
+			// if battery level is higher than the desired end SOC or if battery reaches 100%
+			if (ev.getBattery().getSoc() >= endSocList.get(stopsSoFar.get(evId)) / 100 * ev.getBattery().getCapacity() 
+					|| chargingStrategy.isChargingCompleted(ev)) {
 				
 				// increment number of stops so far
 				stopsSoFar.put(evId, stopsSoFar.get(evId) + 1);
-				// reset accumulated charge
-				chargeAccum.put(evId,  0.0);
 				
 				evIter.remove();
 				eventsManager.processEvent(new ChargingEndEvent(now, charger.getId(), evId));
 				listeners.remove(evId).notifyChargingEnded(ev, now);
 				
 				System.out.println("agent " + evId + " finished charging at t=" + now + "s = " + now/3600);
+				
+				// decrement number of vehicles at this charger
+				VehicleChargingHandler.numVehiclesAtCharger.put(charger.getId(), 
+						VehicleChargingHandler.numVehiclesAtCharger.get(charger.getId()) - 1);
 
 				if (vehicleChargeStatus.containsKey(evId)) {
 					vehicleChargeStatus.replace(evId,1);
@@ -143,7 +136,6 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 		if (pluggedVehicles.remove(ev.getId()) != null) {// successfully removed
 			eventsManager.processEvent(new ChargingEndEvent(now, charger.getId(), ev.getId()));
 			listeners.remove(ev.getId()).notifyChargingEnded(ev, now);
-			
 			if (!queuedVehicles.isEmpty()) {
 				plugVehicle(queuedVehicles.poll(), now);
 			}
@@ -173,7 +165,8 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 			throw new IllegalArgumentException();
 		}
 		
-		System.out.println("agent " + evId + " started charging at t=" + now + "s = " + now/3600);
+		System.out.println("agent " + evId + " started charging at charger " + charger.getId() + " on link "
+				+ charger.getLinkId() + " at t=" + now + "s = " + now/3600);
 		if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(evId)) {
 			vehicleChargeStatus.replace(evId,0);
 		} else {

@@ -59,7 +59,7 @@ public final class EvConfigGroup extends ReflectiveConfigGroup {
 	@Positive
 	private int chargeTimeStep = 5; // 5 s ==> 0.35% SOC (fast charging, 50 kW)
 
-	private int minimumChargeTime = 120;
+	private int minimumChargeTime = 0;
 
 	// only used if SeparateAuxDischargingHandler is used, otherwise ignored
 	@Positive
