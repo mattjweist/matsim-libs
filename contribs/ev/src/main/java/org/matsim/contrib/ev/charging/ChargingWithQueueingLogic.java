@@ -46,11 +46,13 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 	private final Map<Id<ElectricVehicle>, ChargingListener> listeners = new LinkedHashMap<>();
 	
 	// create map for listening to the charge status of the vehicle
+	// initialized during first charging activity
+	// 0 = driving; 1 = finished charging; 2 = queuing; 3 = charging
+	@SuppressWarnings("rawtypes")
 	public static Map<Id, Integer> vehicleChargeStatus = new LinkedHashMap<>();
-	// is initialized during first charging activity
-	// 0 = driving or charging; 1 = finished charging; 2 = queuing
 	
 	// create map for tracking number of charge stops so far
+	@SuppressWarnings("rawtypes")
 	public static Map<Id, Integer> stopsSoFar = new LinkedHashMap<>();
 
 	public ChargingWithQueueingLogic(ChargerSpecification charger, ChargingStrategy chargingStrategy,
@@ -60,7 +62,6 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 		this.eventsManager = Objects.requireNonNull(eventsManager);
 	}
 
-	
 	@Override
 	public void chargeVehicles(double chargePeriod, double now) {
 		Iterator<ElectricVehicle> evIter = pluggedVehicles.values().iterator();
@@ -122,8 +123,6 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 	@Override
 	public void addVehicle(ElectricVehicle ev, ChargingListener chargingListener, double now) {
 		listeners.put(ev.getId(), chargingListener);
-		double pluggedVehiclesSize = pluggedVehicles.size(); // debug
-		double chargerPlugCount = charger.getPlugCount(); // debug
 		if (pluggedVehicles.size() < charger.getPlugCount()) {
 			plugVehicle(ev, now);
 		} else {
@@ -167,10 +166,11 @@ public class ChargingWithQueueingLogic implements ChargingLogic {
 		
 		System.out.println("agent " + evId + " started charging at charger " + charger.getId() + " on link "
 				+ charger.getLinkId() + " at t=" + now + "s = " + now/3600);
+		
 		if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(evId)) {
-			vehicleChargeStatus.replace(evId,0);
+			vehicleChargeStatus.replace(evId,3);
 		} else {
-			vehicleChargeStatus.put(evId,0);
+			vehicleChargeStatus.put(evId,3);
 		}
 		
 		eventsManager.processEvent(new ChargingStartEvent(now, charger.getId(), evId, charger.getChargerType()));

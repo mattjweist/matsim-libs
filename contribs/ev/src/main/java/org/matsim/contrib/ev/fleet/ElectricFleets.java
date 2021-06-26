@@ -22,20 +22,17 @@ package org.matsim.contrib.ev.fleet;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.ev.charging.ChargingPower;
-import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 
 import com.google.common.collect.ImmutableMap;
 
 public class ElectricFleets {
 	public static ElectricFleet createDefaultFleet(ElectricFleetSpecification fleetSpecification,
-			DriveEnergyConsumption.Factory driveConsumptionFactory, AuxEnergyConsumption.Factory auxConsumptionFactory,
-			ChargingPower.Factory chargingFactory) {
+			DriveEnergyConsumption.Factory driveConsumptionFactory, ChargingPower.Factory chargingFactory) {
 		ImmutableMap<Id<ElectricVehicle>, ElectricVehicle> vehicles = fleetSpecification.getVehicleSpecifications()
 				.values()
 				.stream()
-				.map(s -> ElectricVehicleImpl.create(s, driveConsumptionFactory, auxConsumptionFactory,
-						chargingFactory))
+				.map(s -> ElectricVehicleImpl.create(s, driveConsumptionFactory, chargingFactory))
 				.collect(ImmutableMap.toImmutableMap(ElectricVehicle::getId, v -> v));
 		return () -> vehicles;
 	}

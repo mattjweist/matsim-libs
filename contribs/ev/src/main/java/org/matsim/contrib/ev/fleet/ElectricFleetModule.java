@@ -22,7 +22,6 @@ package org.matsim.contrib.ev.fleet;
 
 import org.matsim.contrib.ev.EvConfigGroup;
 import org.matsim.contrib.ev.charging.ChargingPower;
-import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.controler.AbstractModule;
@@ -56,14 +55,12 @@ public class ElectricFleetModule extends AbstractModule {
 					@Inject
 					private DriveEnergyConsumption.Factory driveConsumptionFactory;
 					@Inject
-					private AuxEnergyConsumption.Factory auxConsumptionFactory;
-					@Inject
 					private ChargingPower.Factory chargingPowerFactory;
 
 					@Override
 					public ElectricFleet get() {
 						return ElectricFleets.createDefaultFleet(fleetSpecification, driveConsumptionFactory,
-								auxConsumptionFactory, chargingPowerFactory);
+								chargingPowerFactory);
 					}
 				}).asEagerSingleton();
 			}

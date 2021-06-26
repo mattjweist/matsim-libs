@@ -32,8 +32,6 @@ import org.matsim.contrib.ev.fleet.Battery;
 import org.matsim.contrib.ev.fleet.ElectricVehicle;
 import org.matsim.contrib.ev.infrastructure.ChargerSpecification;
 
-import com.google.common.base.Preconditions;
-
 public class FastThenSlowCharging implements BatteryCharging {
 	private final ElectricVehicle electricVehicle;
 
@@ -44,7 +42,6 @@ public class FastThenSlowCharging implements BatteryCharging {
 	public double calcChargingPower(double maxPower) {
 		Battery b = electricVehicle.getBattery();
 		double relativeSoc = b.getSoc() / b.getCapacity();
-		double c = b.getCapacity() / 3600; // 1 Wh = 3600 J
 
 		double chargePower = 0;
 		if (relativeSoc <= 0.6) {
@@ -62,32 +59,7 @@ public class FastThenSlowCharging implements BatteryCharging {
 	// charge time not relevant when providing open-ended charge duration; using energy instead
 	@Override
 	public double calcChargingTime(ChargerSpecification charger, double energy) {
-		/*
-		Preconditions.checkArgument(energy >= 0, "Energy is negative: %s", energy);
-		
-		Battery b = electricVehicle.getBattery();
-		double startSoc = b.getSoc();
-		double endSoc = startSoc + energy;
-		Preconditions.checkArgument(endSoc <= b.getCapacity(), "End SOC greater than battery capacity: %s", endSoc);
-
-		double threshold1 = 0.5 * b.getCapacity();
-		double threshold2 = 0.75 * b.getCapacity();
-		double c = b.getCapacity() / 3600;
-
-		double energyA = startSoc >= threshold1 ? 0 : Math.min(threshold1, endSoc) - startSoc;
-		double timeA = energyA / Math.min(charger.getPlugPower(), 1.75 * c);
-
-		double energyB = startSoc >= threshold2 || endSoc <= threshold1 ?
-				0 :
-				Math.min(threshold2, endSoc) - Math.max(threshold1, startSoc);
-		double timeB = energyB / Math.min(charger.getPlugPower(), 1.25 * c);
-
-		double energyC = endSoc <= threshold2 ? 0 : endSoc - Math.max(threshold2, startSoc);
-		double timeC = energyC / Math.min(charger.getPlugPower(), 0.5 * c);
-
-		return timeA + timeB + timeC;
-		*/
-		return 0;
+		return 7200; // arbitrary
 	}
 
 	@Override

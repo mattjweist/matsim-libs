@@ -24,7 +24,6 @@ import java.util.Objects;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.ev.charging.ChargingPower;
-import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
 import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 
 import com.google.common.base.MoreObjects;
@@ -32,11 +31,9 @@ import com.google.common.collect.ImmutableList;
 
 public class ElectricVehicleImpl implements ElectricVehicle {
 	public static ElectricVehicle create(ElectricVehicleSpecification vehicleSpecification,
-			DriveEnergyConsumption.Factory driveFactory, AuxEnergyConsumption.Factory auxFactory,
-			ChargingPower.Factory chargingFactory) {
+			DriveEnergyConsumption.Factory driveFactory, ChargingPower.Factory chargingFactory) {
 		ElectricVehicleImpl ev = new ElectricVehicleImpl(vehicleSpecification);
 		ev.driveEnergyConsumption = Objects.requireNonNull(driveFactory.create(ev));
-		ev.auxEnergyConsumption = Objects.requireNonNull(auxFactory.create(ev));
 		ev.chargingPower = Objects.requireNonNull(chargingFactory.create(ev));
 		return ev;
 	}
@@ -45,7 +42,6 @@ public class ElectricVehicleImpl implements ElectricVehicle {
 	private final Battery battery;
 
 	private DriveEnergyConsumption driveEnergyConsumption;
-	private AuxEnergyConsumption auxEnergyConsumption;
 	private ChargingPower chargingPower;
 
 	private ElectricVehicleImpl(ElectricVehicleSpecification vehicleSpecification) {
@@ -79,11 +75,6 @@ public class ElectricVehicleImpl implements ElectricVehicle {
 	}
 
 	@Override
-	public AuxEnergyConsumption getAuxEnergyConsumption() {
-		return auxEnergyConsumption;
-	}
-
-	@Override
 	public ChargingPower getChargingPower() {
 		return chargingPower;
 	}
@@ -94,7 +85,6 @@ public class ElectricVehicleImpl implements ElectricVehicle {
 				.add("vehicleSpecification", vehicleSpecification)
 				.add("battery", battery)
 				.add("driveEnergyConsumption", driveEnergyConsumption.getClass())
-				.add("auxEnergyConsumption", auxEnergyConsumption.getClass())
 				.add("chargingPower", chargingPower.getClass())
 				.toString();
 	}

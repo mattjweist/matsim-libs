@@ -41,8 +41,7 @@ import com.google.inject.Inject;
 
 /**
  * Because in QSim and JDEQSim vehicles enter and leave traffic at the end of links, we skip the first link when
- * calculating the drive-related energy consumption. However, the time spent on the first link is used by the time-based
- * aux discharge process (see {@link AuxDischargingHandler}).
+ * calculating the drive-related energy consumption. 
  */
 public class DriveDischargingHandler
 		implements LinkLeaveEventHandler, VehicleEntersTrafficEventHandler, VehicleLeavesTrafficEventHandler,
@@ -101,8 +100,6 @@ public class DriveDischargingHandler
 	}
 
 	//XXX The current implementation is thread-safe because no other EventHandler modifies battery SOC
-	// (for instance, AUX discharging and battery charging modifies SOC outside event handling
-	// (as MobsimAfterSimStepListeners)
 	//TODO In the long term, it will be safer to move the discharging procedure to a MobsimAfterSimStepListener
 	private EvDrive dischargeVehicle(Id<Vehicle> vehicleId, Id<Link> linkId, double eventTime) {
 		EvDrive evDrive = evDrives.get(vehicleId);
@@ -110,8 +107,6 @@ public class DriveDischargingHandler
 			Link link = network.getLinks().get(linkId);
 			double tt = eventTime - evDrive.movedOverNodeTime;
 			ElectricVehicle ev = evDrive.ev;
-			// double energy = ev.getDriveEnergyConsumption().calcEnergyConsumption(link, tt, eventTime - tt)
-			//		+ ev.getAuxEnergyConsumption().calcEnergyConsumption(eventTime - tt, tt, linkId);
 			double energy = ev.getDriveEnergyConsumption().calcEnergyConsumption(link, tt, eventTime - tt);
 			//Energy consumption might be negative on links with negative slope
 			ev.getBattery().changeSoc(-energy);

@@ -3,7 +3,7 @@
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2015 by the members listed in the COPYING,        *
+ * copyright       : (C) 2016 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -19,14 +19,24 @@
 
 package org.matsim.contrib.ev.discharging;
 
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.ev.fleet.ElectricVehicle;
+import org.matsim.contrib.ev.EvUnits;
 
-public interface AuxEnergyConsumption {
-	interface Factory {
-		AuxEnergyConsumption create(ElectricVehicle electricVehicle);
+/**
+ * modified for static model by mattjweist
+ */
+public class StaticDriveEnergyConsumption implements DriveEnergyConsumption {
+	// static consumption model -mattjweist
+	@Override
+	public double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime) {
+		if (travelTime == 0) {
+			return 0;
+		}
+		
+		double consumptionRate = 26; // kWh/100km
+		// double consumptionRate = ev.getConsumptionRate(); // kWh/100km
+		consumptionRate = EvUnits.kWh_100km_to_J_m(consumptionRate); // convert from kWh/100km to J/m	
+		double consumption = consumptionRate * link.getLength();
+		return consumption;
 	}
-
-	double calcEnergyConsumption(double beginTime, double duration, Id<Link> linkId);
 }

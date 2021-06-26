@@ -8,8 +8,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.ev.EvConfigGroup;
-import org.matsim.contrib.ev.discharging.AuxEnergyConsumption;
-import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
+// import org.matsim.contrib.ev.discharging.DriveEnergyConsumption;
 import org.matsim.contrib.ev.fleet.ElectricFleetSpecification;
 import org.matsim.contrib.ev.infrastructure.ChargingInfrastructureSpecification;
 import org.matsim.core.config.Config;
@@ -62,11 +61,11 @@ public class EvNetworkRoutingProviderRwa implements Provider<RoutingModule> {
 	@Inject
 	private ChargingInfrastructureSpecification chargingInfrastructureSpecification;
 
+	/*
 	@Inject
 	private DriveEnergyConsumption.Factory driveConsumptionFactory;
+	*/
 
-	@Inject
-	private AuxEnergyConsumption.Factory auxConsumptionFactory;
 
 	/**
 	 * This is the older (and still more standard) constructor, where the routingMode and the resulting mode were the
@@ -93,6 +92,7 @@ public class EvNetworkRoutingProviderRwa implements Provider<RoutingModule> {
 
 	private final String mode;
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public RoutingModule get() {
 		log.debug("requesting network routing module with routingMode=" + routingMode + ";\tmode=" + mode);

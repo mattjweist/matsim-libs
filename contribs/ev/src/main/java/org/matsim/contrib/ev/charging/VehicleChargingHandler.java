@@ -80,8 +80,9 @@ public class VehicleChargingHandler
 		chargersAtLinks = ChargingInfrastructures.getChargersAtLinks(chargingInfrastructure);
 	}
 	
-	public static Map<Id, Integer> numVehiclesAtCharger = new LinkedHashMap<>();
-	
+	// key = charger ID, value = # of cars at charger
+	@SuppressWarnings("rawtypes")
+	public static Map<Id, Integer> numVehiclesAtCharger = new LinkedHashMap<>();	
 
 	/**
 	 * This assumes no liability which charger is used, as long as the type matches - matsim
@@ -127,11 +128,11 @@ public class VehicleChargingHandler
 						
 						// check for the planned charger
 						if (chargersList.contains(chargerId)) {
-							Charger chargerFromPlan = ch;				
+							Charger chargerFromPlan = ch;		
 							// check if charger has plug available
 							if (numVehiclesAtCharger.get(chargerId) < ch.getPlugCount()) {							
 								// choose this charger
-								c = ch;
+								c = chargerFromPlan;
 								break loop;
 							} else {
 								// loop through the chargers at the link in order of descending power
@@ -141,8 +142,8 @@ public class VehicleChargingHandler
 									if (!numVehiclesAtCharger.containsKey(chargerId)) {
 										numVehiclesAtCharger.put(chargerId, 0);
 									}
-									// if a plug is available
-									if (numVehiclesAtCharger.get(chargerId) < ch1.getPlugCount()) {
+									// if a plug is available and the power is high
+									if (numVehiclesAtCharger.get(chargerId) < ch1.getPlugCount() && ch1.getPlugPower() >= 0.8*110000) {
 										// choose this charger
 										c = ch1;
 										break loop;
@@ -161,7 +162,6 @@ public class VehicleChargingHandler
 						}
 					}
 					// update number of cars at charger
-					// key = charger ID, value = # of cars at charger
 					Id<Charger> chargerId = c.getId();
 					numVehiclesAtCharger.put(chargerId, numVehiclesAtCharger.get(chargerId) + 1);
 					

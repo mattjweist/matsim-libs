@@ -20,8 +20,6 @@
 
 package org.matsim.contrib.ev.discharging;
 
-import org.matsim.contrib.ev.EvModule;
-import org.matsim.contrib.ev.temperature.TemperatureService;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 
@@ -31,22 +29,12 @@ import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 public class DischargingModule extends AbstractModule {
 	@Override
 	public void install() {
-		bind(DriveEnergyConsumption.Factory.class).toInstance(ev -> new OhdeSlaskiDriveEnergyConsumption());
-		bind(TemperatureService.class).toInstance(linkId -> 15);// XXX fixed temperature 15 oC
-		bind(AuxEnergyConsumption.Factory.class).to(OhdeSlaskiAuxEnergyConsumption.Factory.class).asEagerSingleton();
-
+		bind(DriveEnergyConsumption.Factory.class).toInstance(ev -> new StaticDriveEnergyConsumption());
 		installQSimModule(new AbstractQSimModule() {
 			@Override
 			protected void configureQSim() {
 				this.bind(DriveDischargingHandler.class).asEagerSingleton();
 				addMobsimScopeEventHandlerBinding().to(DriveDischargingHandler.class);
-
-				this.bind(AuxDischargingHandler.class).asEagerSingleton();
-				addMobsimScopeEventHandlerBinding().to(AuxDischargingHandler.class);
-				this.addQSimComponentBinding(EvModule.EV_COMPONENT).to(AuxDischargingHandler.class);
-
-				//by default, no vehicle will be AUX-discharged when not moving
-				this.bind(AuxDischargingHandler.VehicleProvider.class).toInstance(event -> null);
 			}
 		});
 	}

@@ -37,9 +37,6 @@ public final class EvConfigGroup extends ReflectiveConfigGroup {
 	public static final String CHARGE_TIME_STEP = "chargeTimeStep";
 	static final String CHARGE_TIME_STEP_EXP = "charging will be simulated every 'chargeTimeStep'-th time step";
 
-	public static final String AUX_DISCHARGE_TIME_STEP = "auxDischargeTimeStep";
-	static final String AUX_DISCHARGE_TIME_STEP_EXP = "AUX discharging will be simulated every 'auxDischargeTimeStep'-th time step";
-
 	public static final String MINCHARGETIME = "minChargingTime";
 	static final String MINCHARGETIME_EXP = "Minimum activity duration for charging. Used in EvNetwork Routing.";
 
@@ -60,10 +57,8 @@ public final class EvConfigGroup extends ReflectiveConfigGroup {
 	private int chargeTimeStep = 5; // 5 s ==> 0.35% SOC (fast charging, 50 kW)
 
 	private int minimumChargeTime = 0;
-
-	// only used if SeparateAuxDischargingHandler is used, otherwise ignored
-	@Positive
-	private int auxDischargeTimeStep = 60; // 1 min ==> 0.25% SOC (3 kW AUX power)
+	
+	public static int maxChargePower = 110000;
 
 	@NotNull
 	private String chargersFile = null;
@@ -81,7 +76,6 @@ public final class EvConfigGroup extends ReflectiveConfigGroup {
 	public Map<String, String> getComments() {
 		Map<String, String> map = super.getComments();
 		map.put(CHARGE_TIME_STEP, CHARGE_TIME_STEP_EXP);
-		map.put(AUX_DISCHARGE_TIME_STEP, AUX_DISCHARGE_TIME_STEP_EXP);
 		map.put(CHARGERS_FILE, CHARGERS_FILE_EXP);
 		map.put(VEHICLES_FILE, VEHICLES_FILE_EXP);
 		map.put(TIME_PROFILES, TIME_PROFILES_EXP);
@@ -97,16 +91,6 @@ public final class EvConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(CHARGE_TIME_STEP)
 	public void setChargeTimeStep(int chargeTimeStep) {
 		this.chargeTimeStep = chargeTimeStep;
-	}
-
-	@StringGetter(AUX_DISCHARGE_TIME_STEP)
-	public int getAuxDischargeTimeStep() {
-		return auxDischargeTimeStep;
-	}
-
-	@StringSetter(AUX_DISCHARGE_TIME_STEP)
-	public void setAuxDischargeTimeStep(int auxDischargeTimeStep) {
-		this.auxDischargeTimeStep = auxDischargeTimeStep;
 	}
 
 	@StringGetter(CHARGERS_FILE)

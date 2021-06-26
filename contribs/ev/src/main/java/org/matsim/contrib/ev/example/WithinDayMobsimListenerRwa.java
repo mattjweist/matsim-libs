@@ -27,7 +27,6 @@ import com.google.inject.Inject;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Plan;
-import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener;
@@ -39,8 +38,6 @@ import org.matsim.core.router.TripRouter;
 import org.matsim.withinday.utils.EditTrips;
 import org.matsim.withinday.utils.EditPlans;
 import org.matsim.contrib.ev.charging.ChargingWithQueueingLogic;
-import org.matsim.contrib.ev.routing.MyCSVReader;
-
 import javax.inject.Singleton;
 
 /**
@@ -55,7 +52,7 @@ class WithinDayMobsimListenerRwa implements MobsimBeforeSimStepListener {
 	@Inject private TripRouter tripRouter;
 	@Inject private Scenario scenario;
 	
-	private InternalInterface internalInterface; // mattjweist
+	private InternalInterface internalInterface;
 	
 	@Override
 	public void notifyMobsimBeforeSimStep(@SuppressWarnings("rawtypes") MobsimBeforeSimStepEvent event) {
@@ -70,7 +67,7 @@ class WithinDayMobsimListenerRwa implements MobsimBeforeSimStepListener {
 		}
 
 		Collection<MobsimAgent> agentsToReplan = getAgentsToReplan(mobsim, now); 
-		Collection<MobsimAgent> agentsToDelay = getAgentsToDelay(mobsim, now); 
+		Collection<MobsimAgent> agentsToDelay = getAgentsToDelay(mobsim, now); 		
 	
 		for (MobsimAgent ma : agentsToReplan) {
 			doReplanning(ma, mobsim, now);
@@ -86,7 +83,9 @@ class WithinDayMobsimListenerRwa implements MobsimBeforeSimStepListener {
 		
 		final QSim qsim = (QSim) mobsim;
 		for (MobsimAgent agent : (qsim).getAgents().values()){
-			if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(agent.getId()) && ChargingWithQueueingLogic.vehicleChargeStatus.get(agent.getId()) == 1) { // if done charging
+			if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(agent.getId()) 
+					&& ChargingWithQueueingLogic.vehicleChargeStatus.get(agent.getId()) == 1) { 
+				// if done charging
 				set.add(agent);
 				ChargingWithQueueingLogic.vehicleChargeStatus.replace(agent.getId(),0); // reset to zero for next charge event
 			}
@@ -100,14 +99,15 @@ class WithinDayMobsimListenerRwa implements MobsimBeforeSimStepListener {
 		
 		final QSim qsim = (QSim) mobsim;
 		for (MobsimAgent agent : (qsim).getAgents().values()){
-			if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(agent.getId()) && ChargingWithQueueingLogic.vehicleChargeStatus.get(agent.getId()) == 2) { // if queuing
+			if (ChargingWithQueueingLogic.vehicleChargeStatus.containsKey(agent.getId()) 
+					&& ChargingWithQueueingLogic.vehicleChargeStatus.get(agent.getId()) == 2) { 
+				// if queuing
 				set.add(agent);
 			}
 		}
 		return set;
 	}
 	
-
 	private boolean doReplanning(MobsimAgent agent, Netsim mobsim, double now ) {
 
 		Plan plan = WithinDayAgentUtils.getModifiablePlan( agent ) ; 
@@ -146,4 +146,5 @@ class WithinDayMobsimListenerRwa implements MobsimBeforeSimStepListener {
 		
 		return true;
 	}
+	
 }

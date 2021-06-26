@@ -2,11 +2,10 @@
 <!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
 <config>
     <module name="ev">
-        <param name="auxDischargeTimeStep" value="10"/>
         <param name="chargeTimeStep" value="5"/>
         <param name="chargersFile" value="chargers.xml"/>
         <param name="timeProfiles" value="true"/>
-        <param name="vehiclesFile" value="evehicles_5.xml"/>
+        <param name="vehiclesFile" value="C:/Users/Weist/Desktop/Projekt/MILP/MILP/evehicles_RWA.xml"/>
     </module>
 
     <module name="global">
