@@ -38,6 +38,7 @@ public final class ImmutableElectricVehicleSpecification implements ElectricVehi
 	private final ImmutableList<String> chargerTypes;
 	private final double initialSoc;
 	private final double batteryCapacity;
+	private final double consumptionRate;
 
 	private ImmutableElectricVehicleSpecification(Builder builder) {
 		id = Objects.requireNonNull(builder.id);
@@ -45,6 +46,7 @@ public final class ImmutableElectricVehicleSpecification implements ElectricVehi
 		chargerTypes = Objects.requireNonNull(builder.chargerTypes);
 		initialSoc = Objects.requireNonNull(builder.initialSoc);
 		batteryCapacity = Objects.requireNonNull(builder.batteryCapacity);
+		consumptionRate = Objects.requireNonNull(builder.consumptionRate);
 
 		if (initialSoc < 0 || initialSoc > batteryCapacity) {
 			throw new IllegalArgumentException("Invalid initialSoc/batteryCapacity of vehicle: " + id);
@@ -62,6 +64,7 @@ public final class ImmutableElectricVehicleSpecification implements ElectricVehi
 		builder.chargerTypes = copy.getChargerTypes();
 		builder.initialSoc = copy.getInitialSoc();
 		builder.batteryCapacity = copy.getBatteryCapacity();
+		builder.consumptionRate = copy.getConsumptionRate();
 		return builder;
 	}
 
@@ -89,6 +92,11 @@ public final class ImmutableElectricVehicleSpecification implements ElectricVehi
 	public double getBatteryCapacity() {
 		return batteryCapacity;
 	}
+	
+	@Override
+	public double getConsumptionRate() {
+		return consumptionRate;
+	}
 
 	@Override
 	public String toString() {
@@ -98,6 +106,7 @@ public final class ImmutableElectricVehicleSpecification implements ElectricVehi
 				.add("chargerTypes", chargerTypes)
 				.add("initialSoc", initialSoc)
 				.add("batteryCapacity", batteryCapacity)
+				.add("consumptionRate", consumptionRate)
 				.toString();
 	}
 
@@ -107,6 +116,7 @@ public final class ImmutableElectricVehicleSpecification implements ElectricVehi
 		private ImmutableList<String> chargerTypes;
 		private Double initialSoc;
 		private Double batteryCapacity;
+		private Double consumptionRate;
 
 		private Builder() {
 		}
@@ -133,6 +143,11 @@ public final class ImmutableElectricVehicleSpecification implements ElectricVehi
 
 		public Builder batteryCapacity(double val) {
 			batteryCapacity = val;
+			return this;
+		}
+		
+		public Builder consumptionRate(double val) {
+			consumptionRate = val;
 			return this;
 		}
 

@@ -20,7 +20,7 @@
 package org.matsim.contrib.ev.discharging;
 
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.ev.EvUnits;
+import org.matsim.contrib.ev.fleet.ElectricVehicle;
 
 /**
  * modified for static model by mattjweist
@@ -28,15 +28,15 @@ import org.matsim.contrib.ev.EvUnits;
 public class StaticDriveEnergyConsumption implements DriveEnergyConsumption {
 	// static consumption model -mattjweist
 	@Override
-	public double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime) {
+	public double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime, ElectricVehicle ev) {
 		if (travelTime == 0) {
 			return 0;
 		}
 		
-		double consumptionRate = 26; // kWh/100km
-		// double consumptionRate = ev.getConsumptionRate(); // kWh/100km
-		consumptionRate = EvUnits.kWh_100km_to_J_m(consumptionRate); // convert from kWh/100km to J/m	
-		double consumption = consumptionRate * link.getLength();
+		// double consumptionRate = 26; // J/m
+		// consumptionRate = EvUnits.kWh_100km_to_J_m(consumptionRate); // convert from kWh/100km to J/m
+		
+		double consumption = ev.getConsumptionRate() * link.getLength();
 		return consumption;
 	}
 }

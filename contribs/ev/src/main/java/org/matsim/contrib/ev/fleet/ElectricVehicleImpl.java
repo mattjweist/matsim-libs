@@ -47,6 +47,7 @@ public class ElectricVehicleImpl implements ElectricVehicle {
 	private ElectricVehicleImpl(ElectricVehicleSpecification vehicleSpecification) {
 		this.vehicleSpecification = vehicleSpecification;
 		battery = new BatteryImpl(vehicleSpecification.getBatteryCapacity(), vehicleSpecification.getInitialSoc());
+		// consumptionRate = new ConsumptionImpl(vehicleSpecification.getConsumptionRate());
 	}
 
 	@Override
@@ -58,7 +59,7 @@ public class ElectricVehicleImpl implements ElectricVehicle {
 	public Battery getBattery() {
 		return battery;
 	}
-
+	
 	@Override
 	public String getVehicleType() {
 		return vehicleSpecification.getVehicleType();
@@ -67,6 +68,11 @@ public class ElectricVehicleImpl implements ElectricVehicle {
 	@Override
 	public ImmutableList<String> getChargerTypes() {
 		return vehicleSpecification.getChargerTypes();
+	}
+	
+	@Override
+	public Double getConsumptionRate() {
+		return vehicleSpecification.getConsumptionRate();
 	}
 
 	@Override

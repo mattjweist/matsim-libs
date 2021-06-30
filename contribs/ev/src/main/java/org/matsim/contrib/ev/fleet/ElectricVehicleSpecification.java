@@ -38,4 +38,6 @@ public interface ElectricVehicleSpecification extends Identifiable<ElectricVehic
 	double getInitialSoc();//[J]
 
 	double getBatteryCapacity();//[J]
+	
+	double getConsumptionRate();//[J/m]
 }

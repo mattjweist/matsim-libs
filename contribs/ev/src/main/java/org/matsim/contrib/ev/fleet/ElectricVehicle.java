@@ -32,7 +32,9 @@ public interface ElectricVehicle extends Identifiable<ElectricVehicle> {
 	ChargingPower getChargingPower();
 
 	Battery getBattery();
-
+	
+	Double getConsumptionRate();
+	
 	String getVehicleType();
 
 	ImmutableList<String> getChargerTypes();

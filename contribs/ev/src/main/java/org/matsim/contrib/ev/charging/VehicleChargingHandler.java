@@ -156,7 +156,6 @@ public class VehicleChargingHandler
 						}	else {
 							// pick some charger from the link
 							c = chargersAtLink.stream()
-									.filter(ch2 -> ev.getChargerTypes().contains(ch2.getChargerType()))
 									.findAny()
 									.get();
 						}

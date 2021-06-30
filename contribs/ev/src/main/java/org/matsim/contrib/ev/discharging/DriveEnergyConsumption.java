@@ -37,5 +37,5 @@ public interface DriveEnergyConsumption {
 	 * @param linkEnterTime time of entering link (may be undefined)
 	 * @return energy consumed by vehicle on link in J
 	 */
-	double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime);
+	double calcEnergyConsumption(Link link, double travelTime, double linkEnterTime, ElectricVehicle ev);
 }
