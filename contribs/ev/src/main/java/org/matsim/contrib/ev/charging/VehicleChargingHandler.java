@@ -143,7 +143,7 @@ public class VehicleChargingHandler
 										numVehiclesAtCharger.put(chargerId, 0);
 									}
 									// if a plug is available and the power is high
-									if (numVehiclesAtCharger.get(chargerId) < ch1.getPlugCount() && ch1.getPlugPower() >= 0.8*110000) {
+									if (numVehiclesAtCharger.get(chargerId) < ch1.getPlugCount()) {
 										// choose this charger
 										c = ch1;
 										break loop;
