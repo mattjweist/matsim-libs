@@ -35,8 +35,6 @@
         <param name="startTime" value="00:00:00"/>
         <param name="endTime" value="24:00:00"/>
         <param name="simStarttimeInterpretation" value="onlyUseStarttime"/>
-
-
     </module>
 
     <module name="planCalcScore">
@@ -48,25 +46,6 @@
 		<param name="performing" value="+6"/>
 		<param name="traveling" value="-6"/>
 		<param name="waiting" value="-0"/>
-		
-		<!-- 
-		<parameterset type="activityParams">
-            <param name="activityType" value="h"/>
-            <param name="typicalDuration" value="22:00:00"/>
-            <param name="typicalDurationScoreComputation" value="relative"/>
-            <param name="scoringThisActivityAtAll" value="true"/>
-        </parameterset>
-        -->
-
-		<parameterset type="activityParams">
-            <param name="activityType" value="car charging interaction"/>
-            <param name="typicalDuration" value="01:30:00"/>
-            <param name="openingTime" value="00:00:00"/>
-            <param name="closingTime" value="23:59:00"/>
-            <param name="typicalDurationScoreComputation" value="relative"/>
-            <param name="scoringThisActivityAtAll" value="false"/>
-		</parameterset>
-
 		
         <parameterset type="activityParams">
 			<param name="activityType"    value="home" /> 

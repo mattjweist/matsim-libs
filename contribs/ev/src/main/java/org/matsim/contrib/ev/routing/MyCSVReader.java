@@ -31,7 +31,7 @@ public class MyCSVReader {
 					if (!line.startsWith("V")) { // "Vehicle ID" -- skip header row
 						String[] values = line.split(",");
 						
-						// create array lists for chargers, charge energies
+						// create array lists for chargers, end SOCs
 						ArrayList<Id<Charger>> chargersList = new ArrayList<Id<Charger>>();
 						ArrayList<Double> endSocList = new ArrayList<Double>();
 						for (int i = 1; i<=(values.length-1)/2; i++) {
