@@ -15,7 +15,7 @@
 
     <module name="network">
         <!-- A network with a focus on long distances-->
-        <param name="inputNetworkFile" value="bigroadsnetwork.xml.gz"/>
+        <param name="inputNetworkFile" value="moreroads.xml.gz"/>
     </module>
 
     <module name="plans">
@@ -46,6 +46,15 @@
 		<param name="performing" value="+6"/>
 		<param name="traveling" value="-6"/>
 		<param name="waiting" value="-0"/>
+		
+		<parameterset type="activityParams">
+            <param name="activityType" value="car charging interaction"/>
+            <param name="typicalDuration" value="00:30:00"/>
+            <param name="openingTime" value="00:00:00"/>
+            <param name="closingTime" value="23:59:00"/>
+            <param name="typicalDurationScoreComputation" value="relative"/>
+            <param name="scoringThisActivityAtAll" value="false"/>
+		</parameterset>
 		
         <parameterset type="activityParams">
 			<param name="activityType"    value="home" /> 

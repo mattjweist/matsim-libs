@@ -33,9 +33,6 @@ public class StaticDriveEnergyConsumption implements DriveEnergyConsumption {
 			return 0;
 		}
 		
-		// double consumptionRate = 26; // J/m
-		// consumptionRate = EvUnits.kWh_100km_to_J_m(consumptionRate); // convert from kWh/100km to J/m
-		
 		double consumption = ev.getConsumptionRate() * link.getLength();
 		return consumption;
 	}
